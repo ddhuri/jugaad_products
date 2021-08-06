@@ -1,0 +1,17 @@
+uuid: b89173a6-f32f-4032-abe7-e26a5556f155
+langcode: en
+status: true
+dependencies:
+  module:
+    - menu_ui
+third_party_settings:
+  menu_ui:
+    available_menus: {  }
+    parent: ''
+name: Products
+type: products
+description: 'Use <em>Products</em> for creating new Jugaad products.'
+help: ''
+new_revision: false
+preview_mode: 0
+display_submitted: false

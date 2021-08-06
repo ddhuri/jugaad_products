@@ -1,0 +1,12 @@
+name: Jugaad Products
+description: Custom module that helps to add product content type and custom block for QR code.
+package: Custom
+type: module
+dependencies:
+  - block
+  - node
+  - text
+  - link
+  - path
+
+core: 8.x
