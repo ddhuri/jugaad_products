@@ -26,3 +26,13 @@ CONTENTS OF THIS FILE
   - Install the Jugaad Patches module as you would normally install a
   contributed Drupal module. Visit https://www.drupal.org/node/1897420 for
   further information.
+
+  - Add below snippet in your main composer.json file and run the
+      composer require ‘drupal/jugaad_products:dev-main’ to download the module
+    and it's dependencies.
+      "repositories": [
+              {
+                  "type": "vcs",
+                  "url": "git@github.com:ddhuri/jugaad_products"
+              }
+          ],

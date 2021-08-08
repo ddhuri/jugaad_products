@@ -3,10 +3,11 @@ description: Custom module that helps to add product content type and custom blo
 package: Custom
 type: module
 dependencies:
-  - block
-  - node
-  - text
-  - link
-  - path
+  - drupal:block
+  - drupal:node
+  - drupal:text
+  - drupal:link
+  - drupal:path
 
 core: 8.x
+core_version_requirement: ^8 || ^9
