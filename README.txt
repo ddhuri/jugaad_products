@@ -28,7 +28,7 @@ CONTENTS OF THIS FILE
   further information.
 
   - Add below snippet in your main composer.json file and run the
-      composer require ‘drupal/jugaad_products:dev-main’ to download the module
+      composer require drupal/jugaad_products:dev-main to download the module
     and it's dependencies.
       "repositories": [
               {
