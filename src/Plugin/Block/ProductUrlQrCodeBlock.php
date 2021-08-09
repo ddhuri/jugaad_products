@@ -13,6 +13,8 @@ use CodeItNow\BarcodeBundle\Utils\QrCode;
 use Drupal\Core\Render\Markup;
 use Drupal\Core\Url;
 use Drupal\Component\Utility\UrlHelper;
+use Psr\Log\LoggerInterface;
+use Drupal\Core\Utility\Error;
 
 /**
  * Provides a jugaad product qr code block.
@@ -32,6 +34,13 @@ class ProductUrlQrCodeBlock extends BlockBase implements ContainerFactoryPluginI
   protected $routeMatch;
 
   /**
+   * Describes a logger instance.
+   *
+   * @var \Psr\Log\LoggerInterface
+   */
+  protected $logger;
+
+  /**
    * Construct Drupal\jugaad_products\Plugin\Block\ProductUrlQrCodeBlock object.
    *
    * @param array $configuration
@@ -42,11 +51,19 @@ class ProductUrlQrCodeBlock extends BlockBase implements ContainerFactoryPluginI
    *   The plugin implementation definition.
    * @param \Drupal\Core\Routing\RouteMatchInterface $route_match
    *   The route match.
+   * @param \Psr\Log\LoggerInterface $logger
+   *   A logger instance.
    */
-  public function __construct(array $configuration, $plugin_id, array $plugin_definition, RouteMatchInterface $route_match) {
+  public function __construct(
+    array $configuration,
+    $plugin_id,
+    array $plugin_definition,
+    RouteMatchInterface $route_match,
+    LoggerInterface $logger) {
     parent::__construct($configuration, $plugin_id, $plugin_definition);
 
     $this->routeMatch = $route_match;
+    $this->logger = $logger;
   }
 
   /**
@@ -58,6 +75,7 @@ class ProductUrlQrCodeBlock extends BlockBase implements ContainerFactoryPluginI
       $plugin_id,
       $plugin_definition,
       $container->get('current_route_match'),
+      $container->get('logger.factory')->get('jugaad_products'),
     );
   }
 
@@ -73,6 +91,7 @@ class ProductUrlQrCodeBlock extends BlockBase implements ContainerFactoryPluginI
         // Get the product url from link field.
         $product_url = $node->get('field_product_link')->getValue()[0]['uri'];
         if (!empty($product_url)) {
+          $qrCode_image = '';
           // Check added URL is external or not.
           if (!UrlHelper::isExternal($product_url)) {
             global $base_url;
@@ -80,21 +99,30 @@ class ProductUrlQrCodeBlock extends BlockBase implements ContainerFactoryPluginI
           }
 
           // Create a QR code.
-          $qrCode = new QrCode();
+          try {
+            $qrCode = new QrCode();
 
-          $qrCode->setText($product_url)
-            ->setSize(300)
-            ->setPadding(10)
-            ->setErrorCorrection('high')
-            ->setForegroundColor(['r' => 0, 'g' => 0, 'b' => 0, 'a' => 0])
-            ->setBackgroundColor(['r' => 255, 'g' => 255, 'b' => 255, 'a' => 0])
-            ->setLabel('Scan Qr Code')
-            ->setLabelFontSize(16)
-            ->setImageType(QrCode::IMAGE_TYPE_PNG);
+            $qrCode->setText($product_url)
+              ->setSize(300)
+              ->setPadding(10)
+              ->setErrorCorrection('high')
+              ->setForegroundColor(['r' => 0, 'g' => 0, 'b' => 0, 'a' => 0])
+              ->setBackgroundColor(['r' => 255, 'g' => 255, 'b' => 255, 'a' => 0])
+              ->setLabel('Scan Qr Code')
+              ->setLabelFontSize(16)
+              ->setImageType(QrCode::IMAGE_TYPE_PNG);
+
+            $qrCode_image = Markup::create('<img src="data:' . $qrCode->getContentType() . ';base64,' . $qrCode->generate() . '" />');
+          }
+          catch (Exception $e) {
+            // Log the exception to watchdog.
+            $ex_vars = Error::decodeException($e);
+            $this->logger->error('%type: @message in %function (line %line of %file).', $ex_vars);
+          }
 
           // Print the QR code in block.
           return [
-            '#markup' => Markup::create('<img src="data:' . $qrCode->getContentType() . ';base64,' . $qrCode->generate() . '" />'),
+            '#markup' => $qrCode_image,
           ];
         }
       }
